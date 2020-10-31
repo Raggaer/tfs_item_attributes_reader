@@ -59,22 +59,15 @@ type Item struct {
 	WrapID           int                         `json:",omitempty"`
 	Text             string                      `json:",omitempty"`
 	WrittenBy        string                      `json:",omitempty"`
-	WrittenDate      time.Time                   `json:",omitempty"`
+	WrittenDate      *time.Time                  `json:",omitempty"`
 	CustomAttributes map[string]*CustomAttribute `json:",omitempty"`
 	Attack           int
 }
 
 // CustomAttribute defines an item attribute custom attribute
 type CustomAttribute struct {
-	Key         string
-	IsBool      bool
-	BoolValue   bool
-	IsInt       bool
-	IntValue    int64
-	IsString    bool
-	StringValue string
-	IsDouble    bool
-	DoubleValue float64
+	Key   string
+	Value interface{}
 }
 
 // PrettyVisualize returns a JSON visualization
@@ -155,7 +148,7 @@ func Unserialize(data []byte) (*Item, error) {
 			if err != nil {
 				return nil, err
 			}
-			ret.WrittenDate = d
+			ret.WrittenDate = &d
 		case ATTR_TEXT:
 			txt, err := unserializeText(buffer)
 			if err != nil {
@@ -202,8 +195,8 @@ func unserializeCustomAttribute(k string, buffer *bytes.Buffer) (*CustomAttribut
 			return nil, err
 		}
 
-		ret.IsString = true
-		ret.StringValue = v
+		//ret.IsString = true
+		ret.Value = v
 	// uint64
 	case 2:
 		var v int64
@@ -211,8 +204,7 @@ func unserializeCustomAttribute(k string, buffer *bytes.Buffer) (*CustomAttribut
 			return nil, err
 		}
 
-		ret.IsInt = true
-		ret.IntValue = v
+		ret.Value = v
 	// double
 	case 3:
 		var v float64
@@ -220,8 +212,7 @@ func unserializeCustomAttribute(k string, buffer *bytes.Buffer) (*CustomAttribut
 			return nil, err
 		}
 
-		ret.IsDouble = true
-		ret.DoubleValue = v
+		ret.Value = v
 	// bool
 	case 4:
 		var v bool
@@ -229,8 +220,7 @@ func unserializeCustomAttribute(k string, buffer *bytes.Buffer) (*CustomAttribut
 			return nil, err
 		}
 
-		ret.IsBool = true
-		ret.BoolValue = v
+		ret.Value = v
 	}
 
 	return &ret, nil
