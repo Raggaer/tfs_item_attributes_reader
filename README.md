@@ -22,18 +22,10 @@ The unserialized item will look like this:
 ```json
 {
         "Name": "Super Secret Rune",
-        "WrittenDate": "0001-01-01T00:00:00Z",
         "CustomAttributes": {
                 "level": {
                         "Key": "level",
-                        "IsBool": false,
-                        "BoolValue": false,
-                        "IsInt": true,
-                        "IntValue": 8,
-                        "IsString": false,
-                        "StringValue": "",
-                        "IsDouble": false,
-                        "DoubleValue": 0
+                        "Value": 8,
                 }
         },
         "Attack": 0
