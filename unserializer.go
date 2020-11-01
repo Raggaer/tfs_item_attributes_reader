@@ -1,4 +1,4 @@
-package unserializer
+package tfsreader
 
 import (
 	"bytes"
@@ -53,15 +53,16 @@ const (
 
 // Item defines an attribute item
 type Item struct {
-	Name             string                      `json:",omitempty"`
-	Count            int                         `json:",omitempty"`
-	Charges          int                         `json:",omitempty"`
-	WrapID           int                         `json:",omitempty"`
-	Text             string                      `json:",omitempty"`
-	WrittenBy        string                      `json:",omitempty"`
-	WrittenDate      *time.Time                  `json:",omitempty"`
-	CustomAttributes map[string]*CustomAttribute `json:",omitempty"`
-	Attack           int
+	Name                   string             `json:",omitempty"`
+	Count                  uint8              `json:",omitempty"`
+	Charges                uint16             `json:",omitempty"`
+	WrapID                 uint16             `json:",omitempty"`
+	Text                   string             `json:",omitempty"`
+	WrittenBy              string             `json:",omitempty"`
+	WrittenDate            *time.Time         `json:",omitempty"`
+	CustomAttributes       []*CustomAttribute `json:",omitempty"`
+	Attack                 int32              `json:",omitempty"`
+	unserializedAttributes []uint8
 }
 
 // CustomAttribute defines an item attribute custom attribute
@@ -111,6 +112,8 @@ func Unserialize(data []byte) (*Item, error) {
 		if attrType == 0 {
 			break
 		}
+
+		ret.unserializedAttributes = append(ret.unserializedAttributes, attrType)
 
 		switch attrType {
 		case ATTR_CHARGES:
@@ -167,7 +170,6 @@ func Unserialize(data []byte) (*Item, error) {
 				return nil, err
 			}
 			ret.Count = count
-			ret.Charges = count
 		case ATTR_DEPOT_ID:
 			io.CopyN(ioutil.Discard, buffer, 2)
 		default:
@@ -188,51 +190,42 @@ func unserializeCustomAttribute(k string, buffer *bytes.Buffer) (*CustomAttribut
 	ret.Key = k
 
 	switch attrType {
-	// String
 	case 1:
 		v, err := unserializeText(buffer)
 		if err != nil {
 			return nil, err
 		}
-
-		//ret.IsString = true
 		ret.Value = v
-	// uint64
 	case 2:
 		var v int64
 		if err := binary.Read(buffer, binary.LittleEndian, &v); err != nil {
 			return nil, err
 		}
-
 		ret.Value = v
-	// double
 	case 3:
 		var v float64
 		if err := binary.Read(buffer, binary.LittleEndian, &v); err != nil {
 			return nil, err
 		}
-
 		ret.Value = v
-	// bool
 	case 4:
 		var v bool
 		if err := binary.Read(buffer, binary.LittleEndian, &v); err != nil {
 			return nil, err
 		}
-
 		ret.Value = v
 	}
 
 	return &ret, nil
 }
 
-func unserializeCustomAttributes(buffer *bytes.Buffer) (map[string]*CustomAttribute, error) {
+func unserializeCustomAttributes(buffer *bytes.Buffer) ([]*CustomAttribute, error) {
 	var s uint64
 	if err := binary.Read(buffer, binary.LittleEndian, &s); err != nil {
 		return nil, err
 	}
 
-	list := make(map[string]*CustomAttribute, s)
+	list := make([]*CustomAttribute, 0, s)
 
 	for x := uint64(0); x < s; x++ {
 		attrKey, err := readString(buffer)
@@ -245,17 +238,17 @@ func unserializeCustomAttributes(buffer *bytes.Buffer) (map[string]*CustomAttrib
 			return nil, err
 		}
 
-		list[attrKey] = customAttr
+		list = append(list, customAttr)
 	}
 	return list, nil
 }
 
-func unserializeAttack(buffer *bytes.Buffer) (int, error) {
+func unserializeAttack(buffer *bytes.Buffer) (int32, error) {
 	var v int32
 	if err := binary.Read(buffer, binary.LittleEndian, &v); err != nil {
 		return 0, err
 	}
-	return int(v), nil
+	return v, nil
 }
 
 func unserializeDate(buffer *bytes.Buffer) (time.Time, error) {
@@ -286,29 +279,29 @@ func unserializeText(buffer *bytes.Buffer) (string, error) {
 	return readString(buffer)
 }
 
-func unserializeCharges(buffer *bytes.Buffer) (int, error) {
+func unserializeCharges(buffer *bytes.Buffer) (uint16, error) {
 	var count uint16
 	if err := binary.Read(buffer, binary.LittleEndian, &count); err != nil {
 		return 0, err
 	}
 
-	return int(count), nil
+	return count, nil
 }
 
-func unserializeCount(buffer *bytes.Buffer) (int, error) {
+func unserializeCount(buffer *bytes.Buffer) (uint8, error) {
 	var count uint8
 	if err := binary.Read(buffer, binary.LittleEndian, &count); err != nil {
 		return 0, err
 	}
 
-	return int(count), nil
+	return count, nil
 }
 
-func unserializeWrap(buffer *bytes.Buffer) (int, error) {
+func unserializeWrap(buffer *bytes.Buffer) (uint16, error) {
 	var wrapId uint16
 	if err := binary.Read(buffer, binary.LittleEndian, &wrapId); err != nil {
 		return 0, err
 	}
 
-	return int(wrapId), nil
+	return wrapId, nil
 }

@@ -1,4 +1,4 @@
-package unserializer
+package tfsreader
 
 import (
 	"io/ioutil"
@@ -19,13 +19,11 @@ var hexItems = []string{
 
 func TestUnserializeItemHex(t *testing.T) {
 	for _, i := range hexItems {
-		item, err := UnserializeHexString(i)
+		_, err := UnserializeHexString(i)
 		if err != nil {
 			t.Fatalf("Unable to unserialize item attributes - %v", err)
 			return
 		}
-
-		t.Log(item.PrettyVisualize())
 	}
 }
 
@@ -68,11 +66,9 @@ func TestUnserialize(t *testing.T) {
 		return
 	}
 
-	item, err := Unserialize(data)
+	_, err = Unserialize(data)
 	if err != nil {
 		t.Fatalf("Unable to unserialize item attributes - %v", err)
 		return
 	}
-
-	t.Log(item)
 }
