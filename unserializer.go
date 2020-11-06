@@ -62,6 +62,7 @@ type Item struct {
 	WrittenDate            *time.Time         `json:",omitempty"`
 	CustomAttributes       []*CustomAttribute `json:",omitempty"`
 	Attack                 int32              `json:",omitempty"`
+	StoreItem              uint8              `json:",omitempty"`
 	unserializedAttributes []uint8
 }
 
@@ -116,6 +117,12 @@ func Unserialize(data []byte) (*Item, error) {
 		ret.unserializedAttributes = append(ret.unserializedAttributes, attrType)
 
 		switch attrType {
+		case ATTR_STOREITEM:
+			st, err := unserializeStoreItem(buffer)
+			if err != nil {
+				return nil, err
+			}
+			ret.StoreItem = st
 		case ATTR_CHARGES:
 			charges, err := unserializeCharges(buffer)
 			if err != nil {
@@ -241,6 +248,14 @@ func unserializeCustomAttributes(buffer *bytes.Buffer) ([]*CustomAttribute, erro
 		list = append(list, customAttr)
 	}
 	return list, nil
+}
+
+func unserializeStoreItem(buffer *bytes.Buffer) (uint8, error) {
+	var v uint8
+	if err := binary.Read(buffer, binary.LittleEndian, &v); err != nil {
+		return 0, err
+	}
+	return v, nil
 }
 
 func unserializeAttack(buffer *bytes.Buffer) (int32, error) {

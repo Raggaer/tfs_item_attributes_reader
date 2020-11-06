@@ -28,6 +28,10 @@ func (i *Item) Serialize() ([]byte, error) {
 		}
 
 		switch attrType {
+		case ATTR_STOREITEM:
+			if err := serializeStoreItem(i, buffer); err != nil {
+				return nil, err
+			}
 		case ATTR_CHARGES:
 			if err := serializeCharges(i, buffer); err != nil {
 				return nil, err
@@ -117,6 +121,10 @@ func serializeCustomAttribute(v interface{}, i *Item, buffer *bytes.Buffer) erro
 		return binary.Write(buffer, binary.LittleEndian, v.(bool))
 	}
 	return nil
+}
+
+func serializeStoreItem(i *Item, buffer *bytes.Buffer) error {
+	return binary.Write(buffer, binary.LittleEndian, i.StoreItem)
 }
 
 func serializeCount(i *Item, buffer *bytes.Buffer) error {
