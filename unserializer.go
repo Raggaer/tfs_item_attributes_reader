@@ -49,6 +49,7 @@ const (
 	ATTR_DECAYTO           = 35
 	ATTR_WRAPID            = 36
 	ATTR_STOREITEM         = 37
+	ATTR_SOULOWNER         = 38
 )
 
 // Item defines an attribute item
@@ -64,6 +65,7 @@ type Item struct {
 	Attack                 int32              `json:",omitempty"`
 	StoreItem              uint8              `json:",omitempty"`
 	unserializedAttributes []uint8
+	SoulOwner              string `json:",omitempty"`
 }
 
 // CustomAttribute defines an item attribute custom attribute
@@ -117,6 +119,12 @@ func Unserialize(data []byte) (*Item, error) {
 		ret.unserializedAttributes = append(ret.unserializedAttributes, attrType)
 
 		switch attrType {
+		case ATTR_SOULOWNER:
+			txt, err := unserializeText(buffer)
+			if err != nil {
+				return nil, err
+			}
+			ret.SoulOwner = txt
 		case ATTR_STOREITEM:
 			st, err := unserializeStoreItem(buffer)
 			if err != nil {

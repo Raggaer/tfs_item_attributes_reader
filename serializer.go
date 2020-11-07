@@ -28,6 +28,10 @@ func (i *Item) Serialize() ([]byte, error) {
 		}
 
 		switch attrType {
+		case ATTR_SOULOWNER:
+			if err := serializeText(i.SoulOwner, i, buffer); err != nil {
+				return nil, err
+			}
 		case ATTR_STOREITEM:
 			if err := serializeStoreItem(i, buffer); err != nil {
 				return nil, err
