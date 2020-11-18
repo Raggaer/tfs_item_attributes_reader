@@ -280,7 +280,7 @@ func unserializeDate(buffer *bytes.Buffer) (time.Time, error) {
 		return time.Time{}, err
 	}
 
-	t := time.Unix(int64(d), 0)
+	t := time.Unix(int64(d), 0).UTC()
 	return t, nil
 }
 
